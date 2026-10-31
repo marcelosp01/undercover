@@ -10,22 +10,22 @@ From Google Fonts:
 
 ## Colors
 
-- **Primary**: Sea Green `#06D6A0`, Midnight text
-- **Secondary**: Marigold `#FFC145`, Midnight text
-- **Tertiary**: Coral `#F78C6B`, Midnight text
-- **Information**: Cerulean `#118AB2`, white text
-- **Highlight or alert**: Raspberry `#EF476F`, white text
-- **Ink on light backgrounds**: Midnight `#073B4C`
-- **Ink on dark backgrounds**: Sea Mist `#CDD8DB`
+- **Primary**: Graphite `#374151`, white text
+- **Secondary**: Slate `#6B7280`, white text
+- **Tertiary**: Silver `#D1D5DB`, Charcoal text
+- **Information**: Steel `#5B7083`, white text
+- **Highlight or alert**: Brick `#B4474B`, white text
+- **Ink on light backgrounds**: Charcoal `#1F2328`
+- **Ink on dark backgrounds**: Fog `#D4D7DB`
 
-Use Sea Green, Marigold and Coral when three things sit side by side, such as a claim's states or chart series. Add Cerulean fourth and Raspberry fifth.
+Use Graphite, Slate and Silver when three things sit side by side, such as a claim's states or chart series. Add Steel fourth and Brick fifth.
 
 ## Surfaces
 
-- **Light mode**: page background `#F0F4F5`, white panels and cards
-- **Dark mode**: page background `#04232E`, black panels and cards
+- **Light mode**: page background `#F3F4F6`, white panels and cards
+- **Dark mode**: page background `#18191B`, panels and cards `#0B0B0C`
 
-Panels are rounded with no outline. Sea Green and Marigold are too bright for small text, so darken them for headings and body text on light backgrounds and lighten them on dark ones.
+Panels are rounded with no outline. Silver is too light for text, so use it only for backgrounds and fills, never for headings or body text. Brick is the only strong color in the palette, so keep it for alerts and flagged claims.
 
 ## Avoid
 

@@ -56,14 +56,14 @@ Add `start_claim`, `add_step`, `record_decision`, `sign_off_claim` and `pay_clai
 
 Success criteria:
 
-- [ ] Tests cover every state transition: waiting, in progress, awaiting sign-off, decided
-- [ ] A test approves a $1,250 payout and calls `pay_claim`: the response is a 409 and no payment is stored
-- [ ] The same claim after `sign_off_claim` by `HND-01`: `pay_claim` for $1,250 succeeds and the claim is `decided`
-- [ ] `pay_claim` refuses a wrong amount, a declined or referred claim, an unknown claim and a second payment
-- [ ] A payout of exactly $1,000.00 is paid without sign-off; $1,000.01 is not (boundary test)
-- [ ] Sign-off by an unknown handler is refused
-- [ ] With the server running, `curl` against a fresh claim shows the whole flow and the responses match the tests
-- [ ] Format, lint, pyright clean; backend coverage at least 80%
+- [x] Tests cover every state transition: waiting, in progress, awaiting sign-off, decided
+- [x] A test approves a $1,250 payout and calls `pay_claim`: the response is a 409 and no payment is stored
+- [x] The same claim after `sign_off_claim` by `HND-01`: `pay_claim` for $1,250 succeeds and the claim is `decided`
+- [x] `pay_claim` refuses a wrong amount, a declined or referred claim, an unknown claim and a second payment
+- [x] A payout of exactly $1,000.00 is paid without sign-off; $1,000.01 is not (boundary test)
+- [x] Sign-off by an unknown handler is refused
+- [x] With the server running, `curl` against a fresh claim shows the whole flow and the responses match the tests
+- [x] Format, lint, pyright clean; backend coverage at least 80%
 
 ## Phase 3: The agent
 

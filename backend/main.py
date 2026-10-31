@@ -3,10 +3,12 @@
 import json
 import sqlite3
 from collections.abc import Iterator
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 from fastapi import Depends, FastAPI, HTTPException
+from pydantic import BaseModel
 
 from backend import db
 
@@ -23,6 +25,30 @@ def get_db() -> Iterator[sqlite3.Connection]:
 
 
 Db = Annotated[sqlite3.Connection, Depends(get_db)]
+
+
+class Decision(BaseModel):
+    decision: Literal["approve", "decline", "refer"]
+    payout: float
+    explanation: str
+    policy_section: str
+
+
+class Step(BaseModel):
+    text: str
+
+
+class SignOff(BaseModel):
+    handler_id: str
+
+
+class Payment(BaseModel):
+    amount: float
+
+
+def now() -> str:
+    """Return the current UTC time to the second."""
+    return datetime.now(UTC).isoformat(timespec="seconds")
 
 
 def record(conn: sqlite3.Connection, kind: str, record_id: str) -> dict[str, Any]:
@@ -168,3 +194,99 @@ def get_policy_wording() -> dict[str, str]:
 def get_instructions() -> dict[str, str]:
     """Get the agent's instructions, read only."""
     return {"text": (Path(__file__).parent / "instructions.md").read_text("utf-8")}
+
+
+def start(conn: sqlite3.Connection, claim_id: str) -> dict[str, Any]:
+    """Mark a waiting claim in progress; a claim already in progress stays so."""
+    record(conn, "claims", claim_id)
+    work = work_row(conn, claim_id)
+    if work is not None and work["decision"] is not None:
+        raise HTTPException(409, f"Claim {claim_id} already has a decision")
+    if work is None:
+        conn.execute(
+            "INSERT INTO work (claim_id, started_at) VALUES (?, ?)", (claim_id, now())
+        )
+        conn.commit()
+    return claim_view(conn, claim_id)
+
+
+@app.post("/api/claims/{claim_id}/start", operation_id="start_claim")
+def start_claim(claim_id: str, conn: Db) -> dict[str, Any]:
+    """Mark a claim in progress when the agent starts work on it."""
+    return start(conn, claim_id)
+
+
+@app.post("/api/claims/{claim_id}/steps", operation_id="add_step")
+def add_step(claim_id: str, step: Step, conn: Db) -> dict[str, Any]:
+    """Log one step of the agent's work on a claim."""
+    record(conn, "claims", claim_id)
+    conn.execute(
+        "INSERT INTO steps (claim_id, at, text) VALUES (?, ?, ?)",
+        (claim_id, now(), step.text),
+    )
+    conn.commit()
+    return claim_view(conn, claim_id)
+
+
+@app.post("/api/claims/{claim_id}/decision", operation_id="record_decision")
+def record_decision(claim_id: str, body: Decision, conn: Db) -> dict[str, Any]:
+    """Record the agent's decision, payout, explanation and policy section."""
+    record(conn, "claims", claim_id)
+    work = work_row(conn, claim_id)
+    if work is None or work["decision"] is not None:
+        raise HTTPException(409, f"Claim {claim_id} is not in progress")
+    if (body.decision == "approve") != (body.payout > 0):
+        raise HTTPException(422, "The payout is above zero if and only if approved")
+    conn.execute(
+        "UPDATE work SET decision = ?, payout = ?, explanation = ?, "
+        "policy_section = ?, decided_at = ? WHERE claim_id = ?",
+        (
+            body.decision,
+            body.payout,
+            body.explanation,
+            body.policy_section,
+            now(),
+            claim_id,
+        ),
+    )
+    conn.commit()
+    return claim_view(conn, claim_id)
+
+
+@app.post("/api/claims/{claim_id}/sign-off", operation_id="sign_off_claim")
+def sign_off_claim(claim_id: str, body: SignOff, conn: Db) -> dict[str, Any]:
+    """Record a handler's sign-off on an approved payout over the limit."""
+    record(conn, "claims", claim_id)
+    handler = record(conn, "handlers", body.handler_id)
+    if not handler["can_approve_over_limit"]:
+        raise HTTPException(403, f"{handler['name']} cannot sign off over the limit")
+    work = work_row(conn, claim_id)
+    if claim_state(work, payout_limit(conn)) != "awaiting_sign_off":
+        raise HTTPException(409, f"Claim {claim_id} is not awaiting sign-off")
+    conn.execute(
+        "UPDATE work SET signed_off_by = ?, signed_off_at = ? WHERE claim_id = ?",
+        (body.handler_id, now(), claim_id),
+    )
+    conn.commit()
+    return claim_view(conn, claim_id)
+
+
+@app.post("/api/claims/{claim_id}/payment", operation_id="pay_claim")
+def pay_claim(claim_id: str, body: Payment, conn: Db) -> dict[str, Any]:
+    """Pay the approved amount; a payout over the limit waits for sign-off."""
+    record(conn, "claims", claim_id)
+    work = work_row(conn, claim_id)
+    if work is None or work["decision"] != "approve":
+        raise HTTPException(409, f"Claim {claim_id} has no approved payout")
+    if work["paid_amount"] is not None:
+        raise HTTPException(409, f"Claim {claim_id} is already paid")
+    if body.amount != work["payout"]:
+        raise HTTPException(409, f"The approved payout is {work['payout']:.2f}")
+    if claim_state(work, payout_limit(conn)) == "awaiting_sign_off":
+        raise HTTPException(409, f"Claim {claim_id} needs a handler's sign-off first")
+    conn.execute(
+        "UPDATE work SET paid_amount = ?, paid_at = ? WHERE claim_id = ?",
+        (body.amount, now(), claim_id),
+    )
+    conn.commit()
+    return claim_view(conn, claim_id)
