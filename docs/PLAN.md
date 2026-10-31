@@ -112,12 +112,12 @@ Success criteria:
 
 Success criteria:
 
-- [ ] `vitest` tests cover polling start and stop, the run button, the sign-off flow and the instructions page
-- [ ] Playwright MCP: the instructions page shows the text from `GET /api/instructions` and has no input or textarea
-- [ ] Playwright MCP with a stub model (the backend started with a test flag that swaps in the stub): Run agent on a waiting claim shows steps appearing, then a decision
-- [ ] Playwright MCP: a claim over $1,000 shows `awaiting_sign_off` in Brick, and after sign-off shows `decided` with the payment
-- [ ] No console errors on any page (checked with the Playwright MCP console messages)
-- [ ] `npm run check:ts` clean
+- [x] `vitest` tests cover polling start and stop, the run button, the sign-off flow and the instructions page
+- [x] Playwright MCP: the instructions page shows the text from `GET /api/instructions` and has no input or textarea
+- [x] Playwright MCP with a stub model (the backend started with a test flag that swaps in the stub): Run agent on a waiting claim shows steps appearing, then a decision
+- [x] Playwright MCP: a claim over $1,000 shows `awaiting_sign_off` in Brick, and after sign-off shows `decided` with the payment
+- [x] No console errors on any page (checked with the Playwright MCP console messages)
+- [x] `npm run check:ts` clean
 
 ## Phase 6: End-to-end tests, docs and final check
 

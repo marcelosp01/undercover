@@ -1,6 +1,6 @@
 import json
 
-from backend import db
+from backend import db, main
 
 CLAIM = "CLM-1001"
 
@@ -121,3 +121,24 @@ def test_steps(client):
         "Read the claim",
         "Read the policy",
     ]
+
+
+def test_run_agent(client, monkeypatch):
+    calls = []
+    monkeypatch.setattr(main.agent_main, "run", lambda *args: calls.append(args))
+    response = client.post(f"/api/claims/{CLAIM}/run")
+    assert response.status_code == 202
+    assert response.json()["state"] == "in_progress"
+    assert calls[0][0] == CLAIM
+    assert client.post(f"/api/claims/{CLAIM}/run").status_code == 409
+    assert client.post("/api/claims/CLM-0000/run").status_code == 404
+
+
+def test_run_agent_failure_is_logged(client, monkeypatch):
+    def fail(*args):
+        raise RuntimeError("no key")
+
+    monkeypatch.setattr(main.agent_main, "run", fail)
+    client.post(f"/api/claims/{CLAIM}/run")
+    steps = client.get(f"/api/claims/{CLAIM}").json()["steps"]
+    assert steps[-1]["text"] == "The agent stopped: no key"

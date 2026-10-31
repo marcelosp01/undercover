@@ -2,14 +2,16 @@
 
 import json
 import sqlite3
+import uuid
 from collections.abc import Iterator
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Annotated, Any, Literal
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException
 from pydantic import BaseModel
 
+from agent import main as agent_main
 from backend import db
 
 app = FastAPI(title="UnderCover")
@@ -290,3 +292,28 @@ def pay_claim(claim_id: str, body: Payment, conn: Db) -> dict[str, Any]:
     )
     conn.commit()
     return claim_view(conn, claim_id)
+
+
+def run_in_background(claim_id: str) -> None:
+    """Run the agent on a claim, and log a step if it stops with an error."""
+    try:
+        agent_main.run(claim_id, str(uuid.uuid4()))
+    except Exception as error:
+        conn = db.connect()
+        conn.execute(
+            "INSERT INTO steps (claim_id, at, text) VALUES (?, ?, ?)",
+            (claim_id, now(), f"The agent stopped: {error}"),
+        )
+        conn.commit()
+        conn.close()
+
+
+@app.post("/api/claims/{claim_id}/run", operation_id="run_agent", status_code=202)
+def run_agent(claim_id: str, tasks: BackgroundTasks, conn: Db) -> dict[str, Any]:
+    """Start the agent on a waiting claim; it works in the background."""
+    record(conn, "claims", claim_id)
+    if work_row(conn, claim_id) is not None:
+        raise HTTPException(409, f"Claim {claim_id} is not waiting")
+    view = start(conn, claim_id)
+    tasks.add_task(run_in_background, claim_id)
+    return view

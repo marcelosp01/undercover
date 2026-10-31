@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { api, type Claim } from "./api";
 import { decisionLabel, money, words } from "./format";
 import { StateBadge } from "./StateBadge";
@@ -81,9 +81,105 @@ function Details({ claim }: Readonly<{ claim: Claim }>) {
   );
 }
 
+const working = (claim: Claim) => claim.state === "in_progress";
+
+function Steps({ claim }: Readonly<{ claim: Claim }>) {
+  return (
+    <section className="panel">
+      <h2>What the agent did</h2>
+      {claim.steps.length === 0 ? (
+        <p className="muted">No steps yet.</p>
+      ) : (
+        <ol>
+          {claim.steps.map((step) => (
+            <li key={`${step.at}-${step.text}`}>
+              <span className="mono muted">{step.at.slice(11, 19)}</span>{" "}
+              {step.text}
+            </li>
+          ))}
+        </ol>
+      )}
+      {claim.state === "in_progress" && <p className="muted">Working.</p>}
+    </section>
+  );
+}
+
+function RunAgent({
+  claim,
+  onDone,
+}: Readonly<{ claim: Claim; onDone: () => void }>) {
+  const [failed, setFailed] = useState(false);
+  const run = () => {
+    api
+      .runAgent(claim.claim_id)
+      .then(onDone)
+      .catch(() => {
+        setFailed(true);
+      });
+  };
+  return (
+    <section className="panel">
+      <button onClick={run}>Run agent</button>
+      {failed && <p className="muted">Could not start the agent.</p>}
+    </section>
+  );
+}
+
+function SignOff({
+  claim,
+  onDone,
+}: Readonly<{ claim: Claim; onDone: () => void }>) {
+  const load = useCallback(() => api.handlers(), []);
+  const { data: handlers } = useLoad(load);
+  const [chosen, setChosen] = useState("");
+  const [failed, setFailed] = useState(false);
+  const approvers = (handlers ?? []).filter(
+    (handler) => handler.can_approve_over_limit,
+  );
+  const handlerId = chosen || approvers.at(0)?.handler_id;
+  const payout = claim.decision?.payout ?? 0;
+
+  const signOff = () => {
+    if (!handlerId) return;
+    api
+      .signOff(claim.claim_id, handlerId)
+      .then(() => api.pay(claim.claim_id, payout))
+      .then(onDone)
+      .catch(() => {
+        setFailed(true);
+      });
+  };
+  return (
+    <section className="panel flagged">
+      <h2>Sign-off needed</h2>
+      <p>
+        The payout of <span className="mono">{money(payout)}</span> is over the
+        limit. A handler must sign off before it is paid.
+      </p>
+      <label>
+        Handler{" "}
+        <select
+          value={handlerId ?? ""}
+          onChange={(event) => {
+            setChosen(event.target.value);
+          }}
+        >
+          {approvers.map((handler) => (
+            <option key={handler.handler_id} value={handler.handler_id}>
+              {handler.name}
+            </option>
+          ))}
+        </select>
+      </label>{" "}
+      <button onClick={signOff}>Sign off and pay</button>
+      {failed && <p className="muted">Could not sign off.</p>}
+    </section>
+  );
+}
+
 export function ClaimPage({ id }: Readonly<{ id: string }>) {
   const load = useCallback(() => api.claim(id), [id]);
-  const { data: claim, error } = useLoad(load);
+  const { data: claim, error, reload } = useLoad(load, working);
   if (error) return <p className="notice">Could not load claim {id}.</p>;
   if (!claim) return <p className="notice">Loading claim {id}.</p>;
 
@@ -136,11 +232,16 @@ export function ClaimPage({ id }: Readonly<{ id: string }>) {
           </div>
         ))}
       </section>
+      {claim.state === "waiting" && <RunAgent claim={claim} onDone={reload} />}
+      {claim.state === "awaiting_sign_off" && (
+        <SignOff claim={claim} onDone={reload} />
+      )}
       <Details claim={claim} />
       <section className="panel">
         <h2>The agent&rsquo;s decision</h2>
         <Decision claim={claim} />
       </section>
+      <Steps claim={claim} />
     </>
   );
 }

@@ -57,6 +57,10 @@ header {
   text-decoration: none;
 }
 
+.nav {
+  margin-left: auto;
+}
+
 .tagline {
   font-family: "Instrument Serif", serif;
   font-size: 1.15rem;
@@ -201,5 +205,50 @@ tbody tr:hover {
   header {
     padding-left: 1rem;
     padding-right: 1rem;
+  }
+}
+
+button,
+select {
+  font: inherit;
+  border-radius: 0.5rem;
+  border: none;
+  padding: 0.4rem 0.9rem;
+}
+
+button {
+  background: var(--graphite);
+  color: #fff;
+  cursor: pointer;
+}
+
+select {
+  background: var(--page);
+  color: var(--ink);
+}
+
+.flagged h2 {
+  color: var(--brick);
+}
+
+ol {
+  padding-left: 1.25rem;
+  margin: 0;
+}
+
+.instructions {
+  white-space: pre-wrap;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  button {
+    background: var(--steel);
+  }
+
+  .flagged h2 {
+    color: #e08a8d;
   }
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ClaimPage } from "./ClaimPage";
+import { Instructions } from "./Instructions";
 import { Queue } from "./Queue";
 
 function useRoute() {
@@ -27,9 +28,14 @@ export function App() {
           UnderCover
         </a>
         <span className="tagline">Travel insurance claims</span>
+        <a className="nav" href="#/instructions">
+          Agent instructions
+        </a>
       </header>
       <main>
-        {claimId ? <ClaimPage key={claimId} id={claimId} /> : <Queue />}
+        {route === "/instructions" && <Instructions />}
+        {route !== "/instructions" &&
+          (claimId ? <ClaimPage key={claimId} id={claimId} /> : <Queue />)}
       </main>
     </>
   );
