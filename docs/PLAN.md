@@ -96,12 +96,12 @@ React, Vite and TypeScript in strict mode with no `any`, styled to `docs/BRAND.m
 
 Success criteria:
 
-- [ ] `vitest` tests cover the queue, the claim page, state labels and money formatting ($1,250.00), with API calls mocked
-- [ ] `npm run check:ts` is clean (Prettier, ESLint, tsc, vitest with 80% coverage)
-- [ ] Playwright MCP, light mode: the queue shows 25 claims, state counts add up to 25, and a screenshot matches the brand (fonts load, no outlines, no gradients)
-- [ ] Playwright MCP, dark mode: page background `#18191B`, panels `#0B0B0C` (checked with computed styles)
-- [ ] Playwright MCP: clicking CLM-1001 opens its page with the story and documents
-- [ ] Playwright MCP at 390px wide: no horizontal scroll
+- [x] `vitest` tests cover the queue, the claim page, state labels and money formatting ($1,250.00), with API calls mocked
+- [x] `npm run check:ts` is clean (Prettier, ESLint, tsc, vitest with 80% coverage)
+- [x] Playwright MCP, light mode: the queue shows 25 claims, state counts add up to 25, and a screenshot matches the brand (fonts load, no outlines, no gradients)
+- [x] Playwright MCP, dark mode: page background `#18191B`, panels `#0B0B0C` (checked with computed styles)
+- [x] Playwright MCP: clicking CLM-1001 opens its page with the story and documents
+- [x] Playwright MCP at 390px wide: no horizontal scroll
 
 ## Phase 5: Live progress, agent control and instructions
 

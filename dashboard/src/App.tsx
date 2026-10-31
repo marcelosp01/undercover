@@ -1,19 +1,36 @@
 import { useEffect, useState } from "react";
+import { ClaimPage } from "./ClaimPage";
+import { Queue } from "./Queue";
+
+function useRoute() {
+  const [hash, setHash] = useState(window.location.hash);
+  useEffect(() => {
+    const onChange = () => {
+      setHash(window.location.hash);
+    };
+    window.addEventListener("hashchange", onChange);
+    return () => {
+      window.removeEventListener("hashchange", onChange);
+    };
+  }, []);
+  return hash.replace(/^#/, "") || "/";
+}
 
 export function App() {
-  const [status, setStatus] = useState("checking");
-
-  useEffect(() => {
-    void fetch("/api/health")
-      .then((response) => (response.ok ? "up" : "down"))
-      .catch(() => "down")
-      .then(setStatus);
-  }, []);
+  const route = useRoute();
+  const claimId = /^\/claims\/(.+)$/.exec(route)?.[1];
 
   return (
-    <main>
-      <h1>UnderCover</h1>
-      <p>Backend: {status}</p>
-    </main>
+    <>
+      <header>
+        <a className="brand" href="#/">
+          UnderCover
+        </a>
+        <span className="tagline">Travel insurance claims</span>
+      </header>
+      <main>
+        {claimId ? <ClaimPage key={claimId} id={claimId} /> : <Queue />}
+      </main>
+    </>
   );
 }
