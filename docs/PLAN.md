@@ -77,14 +77,14 @@ Replace the hello-world agent with the UnderCover Agent.
 
 Success criteria:
 
-- [ ] Agent tests use a stub chat model that scripts tool calls and make no network call to a model
-- [ ] Test: a stub run on a small claim records an approve decision, pays it and the claim ends `decided` with steps logged
-- [ ] Test: a stub run that approves over $1,000 and tries to pay gets the backend's 409 back as a tool error, and the claim ends `awaiting_sign_off`
-- [ ] Test: a stub run that declines and one that refers record the right decision and no payment
-- [ ] Test: no agent tool reads files under `data/` and none touches `data/evals/`
-- [ ] Test: the instructions the agent uses are exactly the text from `GET /api/instructions`
-- [ ] With a real key, `uv run -m agent.main CLAIM_ID` on one claim finishes and the backend shows a decision, an explanation and logged steps (run once by hand and report the output)
-- [ ] Format, lint, pyright clean; agent coverage at least 80%
+- [x] Agent tests use a stub chat model that scripts tool calls and make no network call to a model
+- [x] Test: a stub run on a small claim records an approve decision, pays it and the claim ends `decided` with steps logged
+- [x] Test: a stub run that approves over $1,000 and tries to pay gets the backend's 409 back as a tool error, and the claim ends `awaiting_sign_off`
+- [x] Test: a stub run that declines and one that refers record the right decision and no payment
+- [x] Test: no agent tool reads files under `data/` and none touches `data/evals/`
+- [x] Test: the instructions the agent uses are exactly the text from `GET /api/instructions`
+- [x] With a real key, `uv run -m agent.main CLAIM_ID` on one claim finishes and the backend shows a decision, an explanation and logged steps (run once by hand and report the output)
+- [x] Format, lint, pyright clean; agent coverage at least 80%
 
 ## Phase 4: Dashboard queue and claim page
 
