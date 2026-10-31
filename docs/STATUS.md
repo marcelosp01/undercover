@@ -1,10 +1,14 @@
 # Status
 
-A hello-world skeleton with every check in place:
+The pilot, built in phases from `docs/PLAN.md`.
 
-- `backend/`: one route, `GET /api/health`
-- `agent/`: the entry point `run(claim_id, thread_id)`, with one tool that calls the health route
-- `dashboard/`: one page that shows whether the backend is up
-- `e2e/`: one test of that page
+## Built
 
-Nothing of UnderCover is built yet. Update this file as you build.
+- `backend/`: FastAPI and SQLite. The database (`backend/undercover.db`, or `UNDERCOVER_DB`) is created and seeded from `data/` on first use. Read routes: claims (with derived state), policies, plans, customers, handlers, company, policy wording and the agent's instructions (`backend/instructions.md`).
+- `agent/`: the hello-world entry point `run(claim_id, thread_id)` (replaced in phase 3).
+- `dashboard/`: one page that shows whether the backend is up (replaced in phase 4).
+- `e2e/`: one test of that page.
+
+## Run
+
+`uv sync`, `npm install`, then `npm run dev`. `npm run check` runs every check.
