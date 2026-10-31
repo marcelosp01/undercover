@@ -127,11 +127,11 @@ Success criteria:
 
 Success criteria:
 
-- [ ] `npm run e2e` passes, covering the five flows above
-- [ ] `npm run check` passes from a clean checkout state (`uv sync`, `npm install`)
-- [ ] `docs/STATUS.md` lists what is built, the API, how to run the stack and how to run the agent on a claim
-- [ ] `git status` shows no database file, no `.env` and nothing from `data/evals/` was changed
-- [ ] All phases ticked in this file and each phase committed (hook passing, no `--no-verify`)
+- [x] `npm run e2e` passes, covering the five flows above
+- [x] `npm run check` passes from a clean checkout state (`uv sync`, `npm install`)
+- [x] `docs/STATUS.md` lists what is built, the API, how to run the stack and how to run the agent on a claim
+- [x] `git status` shows no database file, no `.env` and nothing from `data/evals/` was changed
+- [x] All phases ticked in this file and each phase committed (hook passing, no `--no-verify`)
 
 ## Out of scope for the pilot
 
